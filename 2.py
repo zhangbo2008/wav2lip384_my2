@@ -220,9 +220,10 @@ class Dataset(object):
             if len(img_names_mel) <= 3 * syncnet_T:
                 # print("Len", vidname)
                 continue
-            img_name_mel = random.choice(img_names_mel)
+            # img_name_mel = random.choice(img_names_mel)
 
-            img_name = random.choice(img_names)
+            img_name = random.choice(img_names) #=====图片应该跟mel配套才能训练!!!!!!!!!!!!!
+            img_name_mel=img_name
             wrong_img_name = random.choice(img_names)
             while wrong_img_name == img_name:
                 wrong_img_name = random.choice(img_names)
@@ -293,7 +294,7 @@ class Dataset(object):
             mel = torch.FloatTensor(mel.T).unsqueeze(0)
             indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
             y = torch.FloatTensor(y)
-            return x, indiv_mels, mel, y
+            return x, indiv_mels, mel, y #======x是一些人脸图片, 里面有下面遮挡的, 或者同一个人其他帧的. y是跟音频配套的帧的图片.
 
 
 def save_sample_images(x, g, gt, global_step, checkpoint_dir):
