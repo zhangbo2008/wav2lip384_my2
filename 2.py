@@ -87,7 +87,8 @@ hparams.set_hparam('img_size', 384)
 hparams.num_workers=0  #=====取消多进程方便debug
 hparams.batch_size=2  #=====取消多进程方便debug
 hparams.log_interval=10
-
+hparams.checkpoint_interval=2
+hparams.num_checkpoints=5 # 最多存5个checkpoints
 
 args.syncnet_checkpoint_path='weight\syncnet\ex\syncnet_checkpoint_384_64_000000035_2023-12-15.pth'
 args.data_root='preprocessed_root/data_train'
@@ -223,7 +224,7 @@ class Dataset(object):
             # img_name_mel = random.choice(img_names_mel)
 
             img_name = random.choice(img_names) #=====图片应该跟mel配套才能训练!!!!!!!!!!!!!
-            img_name_mel=img_name
+            img_name_mel=img_name #参考wav2lip_train.py文件145行.
             wrong_img_name = random.choice(img_names)
             while wrong_img_name == img_name:
                 wrong_img_name = random.choice(img_names)

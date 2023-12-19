@@ -43,7 +43,7 @@ args.data_root='preprocessed_root/data_train'
 hparams.num_workers=0
 hparams.batch_size=2
 hparams.img_size=384
-hparams.syncnet_eval_interval=5
+hparams.syncnet_eval_interval=5 #多少step, eval并且save
 hparams.num_checkpoints=5
 
 
