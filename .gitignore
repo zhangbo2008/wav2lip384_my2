@@ -1,12 +1,12 @@
 *.pkl
-*.jpg
+
 
 *.pth
 *.pyc
 __pycache__
 *.h5
 *.avi
-*.wav
+
 
 evaluation/test_filelists/lr*.txt
 *.pyc
