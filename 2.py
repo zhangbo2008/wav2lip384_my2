@@ -91,7 +91,7 @@ hparams.set_hparam('img_size', 384)
 hparams.num_workers=0  #=====取消多进程方便debug
 hparams.batch_size=2  #=====取消多进程方便debug
 hparams.log_interval=10
-hparams.checkpoint_interval=2
+hparams.checkpoint_interval=500
 hparams.num_checkpoints=5 # 最多存5个checkpoints
 
 
