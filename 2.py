@@ -82,6 +82,10 @@ full_mask = np.ones((img_size, img_size))
 full_mask[full_mask.shape[0]//2:-mask_margin, mask_margin:-mask_margin] = mask
 full_mask = np.expand_dims(full_mask, axis=-1)
 full_mask = np.repeat(full_mask, 3, axis=-1)
+
+
+
+#=============设置!!!!!!!!!!!!!!!!
 hparams.set_hparam('img_size', 384)
 
 hparams.num_workers=0  #=====取消多进程方便debug
@@ -89,6 +93,8 @@ hparams.batch_size=2  #=====取消多进程方便debug
 hparams.log_interval=10
 hparams.checkpoint_interval=2
 hparams.num_checkpoints=5 # 最多存5个checkpoints
+
+
 
 args.syncnet_checkpoint_path='weight\syncnet\ex\syncnet_checkpoint_384_64_000000035_2023-12-15.pth'
 args.data_root='preprocessed_root/data_train'
@@ -115,7 +121,7 @@ def mask_mel(crop_mel):
 
     mel = crop_mel.copy()
     mel[time_st:time_st+time_size] = -4.   #====用-4来填充. 表示空白.
-    mel[:, freq_st:freq_st + freq_size] = -4.
+    mel[:, freq_st:freq_st + freq_size] = -4. #频域也填充.
 
     return mel
 

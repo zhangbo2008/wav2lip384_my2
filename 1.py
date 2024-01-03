@@ -41,10 +41,11 @@ args = parser.parse_args()
 args.data_root='preprocessed_root/data_train'
 
 hparams.num_workers=0
-hparams.batch_size=2
+hparams.syncnet_batch_size=20
 hparams.img_size=384
-hparams.syncnet_eval_interval=5 #多少step, eval并且save
+hparams.syncnet_eval_interval=500 #多少step, eval并且save
 hparams.num_checkpoints=5
+hparams.syncnet_lr=1e-4
 
 
 
@@ -129,10 +130,12 @@ class Dataset(object):
 
         return img[y1:y2, x1:x2]
 
-    def __len__(self):
-        return len(self.all_videos)
+    def __len__(self): #========为了更高效实用数据集,我们允许一个数据重复多次抽样.所以改变这个len.
+        return len(self.all_videos)*hparams.batch_size
 
     def __getitem__(self, idx):
+        #====idx是len抽样出来的.所以再除回去找到真正索引
+        idx=idx//hparams.batch_size
         while 1:
             idx = random.randint(0, len(self.all_videos) - 1)
             vidname = self.all_videos[idx]
@@ -174,7 +177,7 @@ class Dataset(object):
                     # img = self.random_crop(img)
                     if flip:
                         img = cv2.flip(img, 1)
-                    img = cv2.resize(img, (hparams.img_size, hparams.img_size))         #===============这里还是使用的96!!!!!!!!!!!!!!!!!!!!!!!!
+                    img = cv2.resize(img, (hparams.img_size, hparams.img_size))         #===============这里还是使用的96!!!!!!!!!!!!!!!!!!!!!!!!我们盖过来!!!!
                 except Exception as e:
                     print("Crop", fname, e)
                     all_read = False
@@ -272,21 +275,23 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
                 cur_session_steps = global_step - resumed_step
                 running_loss += loss.item()
 
-                print(f"Step {global_step} | 匹配距离: {d.detach().cpu().clone().numpy().mean():.8f} | 训练的loss: {running_loss/(step+1):.8f} | Elapsed: {(time() - st):.5f}")
+                # print(f"Step {global_step} | 匹配距离: {d.detach().cpu().clone().numpy().mean():.8f} | 训练的loss: {running_loss/(step+1):.8f} | Elapsed: {(time() - st):.5f}")
+                print(f"Step {global_step} ,{running_loss}")
                 # if global_step == 1 or global_step % checkpoint_interval == 0:
-
+                
                 if global_step % hparams.syncnet_eval_interval == 0:
-                    with torch.no_grad():
+                    if 0:
+                     with torch.no_grad():
                         eval_loss = eval_model(test_data_loader, global_step, device, model, checkpoint_dir)
                         if eval_loss < 0.2:
                             stop_training = True
 
-                    save_checkpoint(model, optimizer, global_step, checkpoint_dir, global_epoch, eval_loss)
-                    logger.log_metrics({
-                        "train_loss": running_loss / (step + 1),
-                        "eval_loss": eval_loss
-                        }, step=global_step)
-                    logger.save()
+                    save_checkpoint(model, optimizer, global_step, checkpoint_dir, global_epoch, 0)
+                    # logger.log_metrics({
+                    #     "train_loss": running_loss / (step + 1),
+                    #     "eval_loss": eval_loss
+                    #     }, step=global_step)
+                    # logger.save()
 
                 # prog_bar.set_description('Loss: {}'.format(running_loss / (step + 1)))
                 #delete(x,mel,y)
@@ -294,7 +299,7 @@ def train(device, model, train_data_loader, test_data_loader, optimizer,
             if stop_training:
                 print("The model has converged, stop training.")
                 break
-            print("Epoch time:", time() - st_e)
+            # print("Epoch time:", time() - st_e)
             global_epoch += 1
         except KeyboardInterrupt:
             print("KeyboardInterrupt")
@@ -403,7 +408,7 @@ def load_checkpoint(path, model, optimizer, reset_optimizer=False):
 
 def run():
     global global_step
-
+    global hparams
     checkpoint_dir = os.path.join(args.checkpoint_dir, args.exp_num)
     checkpoint_path = args.checkpoint_path
 
