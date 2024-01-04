@@ -55,6 +55,7 @@ args.img_size = 384
 args.checkpoint_path='weight\wav\ex_wav2lip_margin\gen_best_wav128_1e4.pth'
 args.face='0.jpg'
 args.audio='audio.wav'
+args.wav2lip_batch_size=2
 
 
 
@@ -140,15 +141,15 @@ def datagen(frames, mels):
 			img_batch, mel_batch = np.asarray(img_batch), np.asarray(mel_batch)
 
 			img_masked = img_batch.copy()
-			img_masked[:, args.img_size//2:] = 0
+			img_masked[:, args.img_size//2:] = 0  #=======遮挡图片下半部分.
 
-			img_batch = np.concatenate((img_masked, img_batch), axis=3)
-			img_batch=(img_batch- 127.5) / 127.5
+			img_batch = np.concatenate((img_masked, img_batch), axis=3) #========遮挡非遮挡都给他.
+			img_batch=(img_batch- 127.5) / 127.5 #归一化  2.py:203
 			mel_batch = np.reshape(mel_batch, [len(mel_batch), mel_batch.shape[1], mel_batch.shape[2], 1])
 
 			yield img_batch, mel_batch, frame_batch, coords_batch
 			img_batch, mel_batch, frame_batch, coords_batch = [], [], [], []
-
+#=========处理剩余拼不成batch的.
 	if len(img_batch) > 0:
 		img_batch, mel_batch = np.asarray(img_batch), np.asarray(mel_batch)
 

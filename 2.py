@@ -192,11 +192,11 @@ class Dataset(object):
             m = self.crop_audio_window(spec, i - 2)
             if m.shape[0] != syncnet_mel_step_size:
                 return None
-            mels.append(m.T)
+            mels.append(m.T) # m:len, channel
 
         mels = np.asarray(mels)
 
-        return mels
+        return mels # 5,channel, len
 
     def prepare_window(self, window):
         # 3 x T x H x W
@@ -253,7 +253,7 @@ class Dataset(object):
 
             try:
                 mel_out_path = join(vidname_mel, "mel.npy")
-                if os.path.isfile(mel_out_path):  # x50 times faster - 0.002 -> 0.01s
+                if os.path.isfile(mel_out_path):  # x50 times faster - 0.002 -> 0.01s 用npy加载速度提升.
                     with open(mel_out_path, "rb") as f:
                         orig_mel = np.load(f)
                 else:
@@ -282,7 +282,7 @@ class Dataset(object):
             if use_aug and random.random() < 0.3:
                 mel = mask_mel(mel)
 
-            indiv_mels = self.get_segmented_mels(orig_mel.copy(), img_name_mel) # 这个用来表示个人的mel 特征.
+            indiv_mels = self.get_segmented_mels(orig_mel.copy(), img_name_mel) # 这个用来表示mel片的数组.
             if indiv_mels is None:
                 continue
 
@@ -301,7 +301,8 @@ class Dataset(object):
             mel = torch.FloatTensor(mel.T).unsqueeze(0)
             indiv_mels = torch.FloatTensor(indiv_mels).unsqueeze(1)
             y = torch.FloatTensor(y)
-            return x, indiv_mels, mel, y #======x是一些人脸图片, 里面有下面遮挡的, 或者同一个人其他帧的. y是跟音频配套的帧的图片.
+            return x, indiv_mels, mel, y #======x是一些人脸图片, 里面有下面遮挡的, 或者同一个人其他帧的. y是跟音频配套的帧的图片. indiv_mels: 2,80,16,1
+        # 5,1,80,16
 
 
 def save_sample_images(x, g, gt, global_step, checkpoint_dir):
@@ -387,7 +388,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
             running_disc_real_loss, running_disc_fake_loss = 0., 0.
             st = time.time()
             offset = 0
-            for step, (x, indiv_mels, mel, gt) in enumerate(train_data_loader):
+            for step, (x, indiv_mels, mel, gt) in enumerate(train_data_loader):   # indiv_mels: 2, 5,1,80, 16 : 80:chennl, 16:time
                 load_time = time.time() - st
                 st = time.time()
                 disc.train()
