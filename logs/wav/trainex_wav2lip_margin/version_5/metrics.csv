@@ -1,0 +1,2 @@
+syncnet_wt,Discriminator/real_loss/train,Generator/sync_loss/train,Discriminator/fake_loss/train,Generator/perceptual_loss/train,Generator/l1_loss/train,step
+0.0,0.6726236343383789,0.0,0.7231128811836243,0.6650434136390686,1.7603058815002441,1

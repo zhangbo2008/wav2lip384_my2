@@ -268,8 +268,8 @@ def main():
 		with torch.no_grad():
 			pred = model(mel_batch, img_batch)
 
-		pred = pred.cpu().numpy().transpose(0, 2, 3, 1) * 255.
-		
+		pred = pred.cpu().numpy().transpose(0, 2, 3, 1) 
+		pred=pred*127.5-127.5
 		for p, f, c in zip(pred, frames, coords):
 			y1, y2, x1, x2 = c
 			p = cv2.resize(p.astype(np.uint8), (x2 - x1, y2 - y1))

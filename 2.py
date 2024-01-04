@@ -93,7 +93,7 @@ hparams.batch_size=2  #=====取消多进程方便debug
 hparams.log_interval=10
 hparams.checkpoint_interval=500
 hparams.num_checkpoints=5 # 最多存5个checkpoints
-
+hparams.syncnet_wt=0.003
 
 
 args.syncnet_checkpoint_path='weight\syncnet\ex\syncnet_checkpoint_384_64_000000035_2023-12-15.pth'
@@ -403,7 +403,7 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
                 disc_optimizer.zero_grad()
 
                 with torch.cuda.amp.autocast(enabled=False):
-                    g = model(indiv_mels, x)
+                    g = model(indiv_mels, x) #=========wav2lip模型, 喂入 一组mel, 这里面是5个mel, 一组人脸. 生成一组人脸.
 
                     if hparams.syncnet_wt > 0. and syncnet is not None:
                         try:
@@ -441,7 +441,10 @@ def train(device, model, disc, train_data_loader, test_data_loader, optimizer, d
 
                 loss.backward()
                 optimizer.step()
-
+                #============训练够了就开始加入sync网络.
+                if loss < .75:
+                        hparams.set_hparam('syncnet_wt', 0.03)
+                        syncnet_wt=0.03
                 ### Remove all gradients before Training disc
                 disc_optimizer.zero_grad()
 
