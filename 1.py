@@ -220,8 +220,8 @@ class Dataset(object):
                 continue
 
             # H x W x 3 * T
-            # x = np.concatenate(window, axis=2) / 255. # [0, 1]
-            x = (np.concatenate(window, axis=2) - 127.5) / 127.5  # [-1, 1] 归一化. #================归一化之后的图片!!!!!!!!!!!!!!这是错的!~因为inference里面乘以255的.
+
+            x = (np.concatenate(window, axis=2) - 127.5) / 127.5  # [-1, 1] 归一化. #
             x = x.transpose(2, 0, 1)
             x = x[:, x.shape[1]//2:] #========x只保存嘴部照片.
 
